@@ -1,0 +1,169 @@
+{
+	"organizationId": 1,
+	"entities": 
+	[
+		{
+			"type": "currencyType",
+			"entity": 
+			{
+				"table": "CURRENCY_TYPE",
+				"sobject": "CurrencyType",
+				"fields": 
+				{
+					"CURRENCY_TYPE_ID": "Id",
+					"ISO_CODE": "IsoCode",
+					"IS_ACTIVE": "IsActive",
+					"CONVERSION_RATE" : "ConversionRate",
+					"DECIMAL_PLACES" : "DecimalPlaces",
+					"IS_CORPORATE" : "IsCorporate"
+				},
+
+				"defaultValues": 
+				{
+					
+				}
+			}
+		},
+		
+		{
+			"type": "userRole",
+			"entity": 
+			{
+				"table": "USER_ROLE",
+				"sobject": "UserRole",
+				"fields": 
+				{
+					"USER_ROLE_ID": "Id",
+					"NAME" : "Name",
+					"@PARENT_ROLE_ID" : "ParentRoleId"
+				},
+
+				"defaultValues": 
+				{
+					
+				}
+			}
+		},
+		
+		{
+			"type": "pricebook",
+			"entity": 
+			{
+				"table": "PRICEBOOK",
+				"sobject": "Pricebook2",
+				"whereClause" : "IsStandard = false and IsActive = true",
+				"fields": 
+				{
+					"PRICEBOOK_ID": "Id",
+					"NAME" : "Name",
+					"CURRENCY_ISO_CODE": "CurrencyIsoCode",
+					"DESCRIPTION" : "Description"
+				},
+				
+				"defaultValues" :
+				{
+				    "IS_ENABLED" : false
+				}
+			}
+		},
+
+		{
+			"type": "product",
+			"entity": 
+			{
+				"table": "PRODUCT",
+				"sobject": "Product2",
+				"whereClause" : "IsActive = true And Id In (select Product2Id from PricebookEntry where Pricebook2.IsStandard = false And Pricebook2.IsActive = true)",
+				"fields": 
+				{
+					"PRODUCT_ID": "Id",
+					"NAME": "Name",
+					"CURRENCY_ISO_CODE" : "CurrencyIsoCode",
+					"PRODUCT_CODE": "ProductCode",
+					"DESCRIPTION": "Description",
+					"IS_ACTIVE": "IsActive",
+					"FAMILY": "Family",
+					"IS_DELETED": "IsDeleted"
+				}
+			}
+		},
+
+		{
+			"type": "pricebookEntry",
+			"entity": 
+			{
+				"table": "PRICEBOOK_ENTRY",
+				"sobject": "PricebookEntry",
+				"whereClause" : "Pricebook2.IsStandard = false And Pricebook2.IsActive = true And Product2.IsActive = true",
+				"fields": 
+				{
+					"PRICEBOOK_ENTRY_ID": "Id",
+					"CURRENCY_ISO_CODE": "currencyIsoCode",
+					"UNIT_PRICE": "UnitPrice",
+					"IS_ACTIVE": "IsActive",
+					"IS_DELETED": "IsDeleted",
+					"@PRODUCT2_ID" : "Product2Id",
+					"@PRICEBOOK2_ID" : "Pricebook2Id"
+				},
+				
+				"defaultValues" :
+				{
+				    "PRODUCT_ID" : "(Select ID From PRODUCT Where PRODUCT_ID = @PRODUCT2_ID)",
+				    "PRICEBOOK_ID" : "(Select ID From PRICEBOOK Where PRICEBOOK_ID = @PRICEBOOK2_ID)"
+				}
+			}
+		},
+
+		{
+			"type": "user",
+			"entity": 
+			{
+				"table": "USER",
+				"sobject": "User",
+				"fields": 
+				{
+					"USER_ID": "Id",
+					"USERNAME": "Username",
+					"FIRST_NAME": "FirstName",
+					"LAST_NAME": "LastName",
+					"NAME": "Name",
+					"ABOUT_ME": "AboutMe",
+					"ALIAS": "Alias",
+					"COMMUNITY_NICKNAME": "CommunityNickname",
+					"COMPANY_NAME": "CompanyName",
+					"DIVISION": "Division",
+					"DEPARTMENT": "Department",
+					"EMAIL": "Email",
+					"EMPLOYEE_NUMBER": "EmployeeNumber",
+					"IS_ACTIVE": "IsActive",
+					"LANGUAGE_LOCALE_KEY": "LanguageLocaleKey",
+					"LONGITUDE": "Longitude",
+					"LATITUDE": "Latitude",
+					"LOCALE_SID_KEY": "LocaleSidKey",
+					"SENDER_EMAIL": "SenderEmail",
+					"SENDER_NAME": "SenderName",
+					"SIGNATURE": "Signature",
+					"TIMEZONE_SID_KEY": "TimezoneSidKey",
+					"USER_TYPE": "UserType",
+					"TITLE": "Title",
+					"STREET": "Street",
+					"CITY": "City",
+					"STATE": "State",
+					"POSTAL_CODE": "PostalCode",
+					"COUNTRY": "Country",
+					"PHONE": "Phone",
+					"FAX": "Fax",
+					"MOBILE_PHONE": "MobilePhone",
+					"EXTENSION": "Extension",
+					"@MANAGER_ID" : "ManagerId",
+					"@USER_ROLE_ID" : "UserRoleId"
+				},
+				
+				"defaultValue" :
+				{
+				    "PRODUCT_ID" : "(Select ID From USER_ROLE Where USER_ROLE_ID = @USER_ROLE_ID)"
+				}
+			}
+		}
+	]
+}

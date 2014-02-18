@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+  <classpathentry kind="src" path="src/test/java" output="target/test-classes" including="**/*.java"/>
+  <classpathentry kind="src" path="src/test/resources" output="target/test-classes" excluding="**/*.java"/>
+  <classpathentry kind="src" path="src/main/java" including="**/*.java"/>
+  <classpathentry kind="src" path="src/main/resources" excluding="**/*.java"/>
+  <classpathentry kind="output" path="target/classes"/>
+  <classpathentry kind="var" path="M2_REPO/javax/json/javax.json-api/1.0/javax.json-api-1.0.jar"/>
+  <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/resteasy/resteasy-jackson-provider/3.0.6.Final/resteasy-jackson-provider-3.0.6.Final.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/codehaus/jackson/jackson-core-asl/1.9.12/jackson-core-asl-1.9.12.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/codehaus/jackson/jackson-mapper-asl/1.9.12/jackson-mapper-asl-1.9.12.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/codehaus/jackson/jackson-jaxrs/1.9.12/jackson-jaxrs-1.9.12.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/codehaus/jackson/jackson-xc/1.9.12/jackson-xc-1.9.12.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/glassfish/javax.json/1.0.4/javax.json-1.0.4.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/hibernate/hibernate-entitymanager/4.2.6.Final/hibernate-entitymanager-4.2.6.Final.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/logging/jboss-logging/3.1.0.GA/jboss-logging-3.1.0.GA.jar"/>
+  <classpathentry kind="var" path="M2_REPO/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jboss/spec/javax/transaction/jboss-transaction-api_1.1_spec/1.0.1.Final/jboss-transaction-api_1.1_spec-1.0.1.Final.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/hibernate/javax/persistence/hibernate-jpa-2.0-api/1.0.1.Final/hibernate-jpa-2.0-api-1.0.1.Final.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/hibernate/hibernate-core/4.2.6.Final/hibernate-core-4.2.6.Final.jar"/>
+  <classpathentry kind="var" path="M2_REPO/antlr/antlr/2.7.7/antlr-2.7.7.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/hibernate/common/hibernate-commons-annotations/4.0.2.Final/hibernate-commons-annotations-4.0.2.Final.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/javassist/javassist/3.18.1-GA/javassist-3.18.1-GA.jar"/>
+  <classpathentry kind="var" path="M2_REPO/com/force/api/force-wsc/29.0.0/force-wsc-29.0.0.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/antlr/ST4/4.0.7/ST4-4.0.7.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/antlr/antlr-runtime/3.5/antlr-runtime-3.5.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/antlr/stringtemplate/3.2.1/stringtemplate-3.2.1.jar"/>
+  <classpathentry kind="var" path="M2_REPO/com/force/api/force-partner-api/29.0.0/force-partner-api-29.0.0.jar"/>
+  <classpathentry kind="var" path="M2_REPO/com/force/api/force-metadata-api/29.0.0/force-metadata-api-29.0.0.jar"/>
+  <classpathentry kind="var" path="M2_REPO/net/sf/opencsv/opencsv/2.3/opencsv-2.3.jar"/>
+  <classpathentry kind="var" path="M2_REPO/junit/junit/4.8.2/junit-4.8.2.jar"/>
+</classpath>
