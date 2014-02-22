@@ -1,10 +1,7 @@
-package com.nowellpoint.salesforce.client;
+package com.nowellpoint.handler.dataimport;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -15,11 +12,13 @@ import javax.persistence.EntityManagerFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.hibernate.Session;
 
-import au.com.bytecode.opencsv.CSVReader;
-
-import com.nowellpoint.salesforce.client.model.Entities;
-import com.nowellpoint.salesforce.client.model.Entity;
-import com.nowellpoint.salesforce.client.model.EntityMapping;
+import com.nowellpoint.handler.dataimport.config.Entities;
+import com.nowellpoint.handler.dataimport.config.Entity;
+import com.nowellpoint.handler.dataimport.config.EntityMapping;
+import com.nowellpoint.handler.dataimport.exception.DataImportException;
+import com.nowellpoint.handler.dataimport.mysql.TableImporter;
+import com.nowellpoint.handler.dataimport.sforce.DataExporter;
+import com.nowellpoint.handler.dataimport.task.ImportTask;
 import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.ws.ConnectionException;
 
@@ -30,51 +29,33 @@ public class DataImporter {
 	private String mappingFile;
 	private PartnerConnection connection;
 	private String outputDirectory;
-	private EntityManagerFactory entityManagerFactory;
-	private SalesforceExporter exporter;
+	private EntityManagerFactory emf;
 	
-	public DataImporter() {
-		exporter = new SalesforceExporter();
-	}
-	
-	public DataImporter setMappingFile(String mappingFile) {
+	public DataImporter(String mappingFile, Long organizationId, Long userId, PartnerConnection connection, EntityManagerFactory emf, String outputDirectory) {
 		this.mappingFile = mappingFile;
-		return this;
-	}
-
-	public DataImporter setPartnerConnection(PartnerConnection connection) {
-		this.connection = connection;
-		return this;
-	}
-
-	public DataImporter setOutputDirectory(String outputDirectory) {
-		this.outputDirectory = outputDirectory;
-		return this;
-	}
-
-	public DataImporter setEntityManagerFactory(EntityManagerFactory entityManagerFactory) {
-		this.entityManagerFactory = entityManagerFactory;
-		return this;
-	}
-	
-	public DataImporter setOrganizationId(Long organizationId) {
 		this.organizationId = organizationId;
-		return this;
-	}
-	
-	public DataImporter setUserId(Long userId) {
 		this.userId = userId;
-		return this;
+		this.connection = connection;
+		this.emf = emf;
+		this.outputDirectory = outputDirectory;
 	}
 
-	public void run() {
+	public void runFullImport() {
 		ObjectMapper om = new ObjectMapper();
 		try {
-			EntityMapping mapping = om.readValue(this.getClass().getResourceAsStream("/" + mappingFile), EntityMapping.class);
+			EntityMapping mapping = om.readValue(mappingFile, EntityMapping.class);
 			for (Entities entities : mapping.getEntities()) {
 				String type = entities.getType();
 				Entity entity = entities.getEntity();	
+				
 				createDataFile(type, entity);
+				
+				if (entity.getPreImport() != null && entity.getPreImport().trim().length() > 0) {
+					if (Class.forName(entity.getPreImport()).getSuperclass().isAssignableFrom(ImportTask.class)) {
+						ImportTask task = (ImportTask) Class.forName(entity.getPostImport()).newInstance();
+						task.run(emf, connection, entity);
+					}
+				}
 				
 				if (entity.getDefaultValues() == null) {
 					entity.setDefaultValues(new HashMap<String, String>());
@@ -87,24 +68,24 @@ public class DataImporter {
 				entity.getDefaultValues().put("LAST_UPDATE_DATE", "SYSDATE()");
 				entity.getDefaultValues().put("VERSION", String.valueOf(1));
 				
-				//importDataFile(entity);
+				importDataFile(entity);
 				
-				System.out.println("Exported..." + entity.getQueryResultSize());
-				System.out.println("Impored..." + entity.getRecordsImported());
+				if (entity.getPostImport() != null && entity.getPostImport().trim().length() > 0) {
+					if (Class.forName(entity.getPostImport()).getSuperclass().isAssignableFrom(ImportTask.class)) {
+						ImportTask task = (ImportTask) Class.forName(entity.getPostImport()).newInstance();
+						task.run(emf, connection, entity);
+					}
+				}
+				
+				deleteDataFile(entity.getDataFile());
 			}		
-		} catch (IOException | ConnectionException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			throw new DataImportException(e);
 		}	
-		
-		try {
-			buildManagerHierarchy("/tmp/user_1.csv");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 	
-	private void createDataFile(String type, Entity entity) throws IOException, ConnectionException {		
+	private void createDataFile(String type, Entity entity) throws IOException, ConnectionException {	
+		DataExporter exporter = new DataExporter();
 		String query = buildQuery(entity.getSobject(), entity.getFields(), entity.getWhereClause());
 		String fileName = outputDirectory.concat("/" + type + "_" + organizationId + ".csv");
 		int size = exporter.createFile(connection, fileName, getDelimiter(), getEnclosedBy(), query);
@@ -114,11 +95,11 @@ public class DataImporter {
 
 	private void importDataFile(Entity entity) {
 		String importString = buildImportString(entity.getDataFile(), entity.getTable(), entity.getFields(), entity.getDefaultValues());
-		MySqlImporter work = new MySqlImporter();
+		TableImporter work = new TableImporter();
 		work.setImportStatement(importString);
 
-		EntityManager entityManager = entityManagerFactory.createEntityManager();
-		Session session = entityManager.unwrap(Session.class);
+		EntityManager em = emf.createEntityManager();
+		Session session = em.unwrap(Session.class);
 		session.doWork(work);
 		
 		entity.setRecordsImported(work.getRecordCount());
@@ -178,43 +159,7 @@ public class DataImporter {
 				}
 			}
 		}
-		System.out.println(sb.toString());
 		return sb.toString();		
-	}
-	
-	public void buildManagerHierarchy(String dataFile) throws IOException {
-		CSVReader reader = new CSVReader(new FileReader(dataFile), getDelimiter(), getEnclosedBy());
-		int managerIdColumn = 0;
-		int userIdColumn = 0;
-		String [] columns = reader.readNext();
-		for (int i = 0; i < columns.length; i++) {
-			if ("ManagerId".equalsIgnoreCase(columns[i])) {
-				managerIdColumn = i;
-			}
-			if ("UserId".equalsIgnoreCase(columns[i])) {
-				userIdColumn = i;
-			}
-		}
-		
-		EntityManager entityManager = entityManagerFactory.createEntityManager();
-		
-		String selectSQL = "SELECT ID FROM USER WHERE USER_ID = :managerId";
-		String updateSQL = "UPDATE USER SET MANAGER_ID = :id WHERE USER_ID = :userId";
-		
-		String [] nextLine = reader.readNext();
-	    while ((nextLine = reader.readNext()) != null) {
-	    	String managerId = nextLine[managerIdColumn];
-	    	String userId = nextLine[userIdColumn];
-	    	if (managerId.trim().length() > 0) {
-	    		System.out.println("ManagerId: " + managerId);
-		    	System.out.println("UserId: " + userId);
-
-				Session session = entityManager.unwrap(Session.class);
-				session.doWork(new ManagerHierarchyUpdate(userId, managerId));
-	    	}
-	    }
-		reader.close();
-		entityManager.close();
 	}
 	
 	private void deleteDataFile(String dataFile) {

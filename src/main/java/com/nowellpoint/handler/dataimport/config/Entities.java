@@ -1,4 +1,4 @@
-package com.nowellpoint.salesforce.client.model;
+package com.nowellpoint.handler.dataimport.config;
 
 import java.io.Serializable;
 

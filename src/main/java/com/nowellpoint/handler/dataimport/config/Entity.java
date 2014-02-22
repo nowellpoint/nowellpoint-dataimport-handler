@@ -1,4 +1,4 @@
-package com.nowellpoint.salesforce.client.model;
+package com.nowellpoint.handler.dataimport.config;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -62,9 +62,34 @@ public class Entity implements Serializable {
 	
 	private Integer recordsImported;
 	
+	/**
+	 * 
+	 */
+	
+	private String preImport;
+	
+	/**
+	 * 
+	 */
+	
+	private String postImport;
+	
+	/**
+	 * 
+	 */
+	
+	private String delimeter;
+	
+	/**
+	 * 
+	 */
+	
+	private String enclosedBy;
+	
 
 	public Entity() {
-		
+		setDelimeter(",");
+		setEnclosedBy("\"");
 	}
 	
 	public void addField(String target, String source) {
@@ -133,5 +158,37 @@ public class Entity implements Serializable {
 
 	public void setRecordsImported(Integer recordsImported) {
 		this.recordsImported = recordsImported;
+	}
+
+	public String getPreImport() {
+		return preImport;
+	}
+
+	public void setPreImport(String preImport) {
+		this.preImport = preImport;
+	}
+
+	public String getPostImport() {
+		return postImport;
+	}
+
+	public void setPostImport(String postImport) {
+		this.postImport = postImport;
+	}
+
+	public String getDelimeter() {
+		return delimeter;
+	}
+
+	public void setDelimeter(String delimeter) {
+		this.delimeter = delimeter;
+	}
+
+	public String getEnclosedBy() {
+		return enclosedBy;
+	}
+
+	public void setEnclosedBy(String enclosedBy) {
+		this.enclosedBy = enclosedBy;
 	}
 }

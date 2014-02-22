@@ -31,6 +31,7 @@
 			{
 				"table": "USER_ROLE",
 				"sobject": "UserRole",
+				"postImport" : "com.nowellpoint.handler.dataimport.task.UserRolePostImport",
 				"fields": 
 				{
 					"USER_ROLE_ID": "Id",
@@ -120,6 +121,7 @@
 			{
 				"table": "USER",
 				"sobject": "User",
+				"postImport" : "com.nowellpoint.handler.dataimport.task.UserPostImport",
 				"fields": 
 				{
 					"USER_ID": "Id",

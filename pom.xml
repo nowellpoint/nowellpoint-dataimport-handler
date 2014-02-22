@@ -4,8 +4,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.nowellpoint</groupId>
-	<artifactId>nowellpoint-salesforce-api</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<artifactId>nowellpoint-dataimport-handler</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
 	<name>Salesforce API</name>
 	<description>Salesforce APIs</description>
 

@@ -1,4 +1,4 @@
-package com.nowellpoint.salesforce.client;
+package com.nowellpoint.handler.dataimport.mysql;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -6,7 +6,7 @@ import java.sql.SQLException;
 
 import org.hibernate.jdbc.Work;
 
-public class MySqlImporter implements Work {
+public class TableImporter implements Work {
 
 	private String importStatement;
 	

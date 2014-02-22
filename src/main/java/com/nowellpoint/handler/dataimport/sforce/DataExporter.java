@@ -1,4 +1,4 @@
-package com.nowellpoint.salesforce.client;
+package com.nowellpoint.handler.dataimport.sforce;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -15,7 +15,7 @@ import com.sforce.soap.partner.sobject.SObject;
 import com.sforce.ws.ConnectionException;
 import com.sforce.ws.bind.XmlObject;
 
-public class SalesforceExporter implements Serializable {
+public class DataExporter implements Serializable {
 
 	/**
 	 * 
