@@ -5,6 +5,7 @@ import java.util.Scanner;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.NoResultException;
 import javax.persistence.Persistence;
 
 import org.junit.AfterClass;
@@ -50,72 +51,80 @@ public class DataImportTest {
 	
 	@Before
 	public void setupData() {
+		
 		EntityManager em = emf.createEntityManager();
-		em.getTransaction().begin();
 		
-		QueryResult qr = null;
-		SObject sobject = null;
-		
+		String organizationId = null;
+		String userId = null;
 		try {
-			qr = connection.query("Select Id, City, Country, Name, "
-					+ "PostalCode, State, Street From Organization "
-					+ "Where Id = " + connection.getUserInfo().getOrganizationId());
-			
+			organizationId = connection.getUserInfo().getOrganizationId();
+			userId = connection.getUserInfo().getUserId();
 		} catch (ConnectionException e) {
 			e.printStackTrace();
 		}
 		
-		sobject = qr.getRecords()[0];
-				
-		organization = new Organization();
-		organization.setCity(sobject.getField("City").toString());
-		organization.setCountry(sobject.getField("Country").toString());
-		organization.setDefaultLocaleSidKey("en_US");
-		organization.setFiscalYearStartMonth(3);
-		organization.setName(sobject.getField("Name").toString());
-		organization.setOrganizationId(sobject.getField("Id").toString());
-		organization.setPostalCode(sobject.getField("PostalCode").toString());
-		organization.setState(sobject.getField("State").toString());
-		organization.setStreet(sobject.getField("Street").toString());		
-		
-		em.persist(organization);
-		
 		try {
-			qr = connection.query("Select Id, Alias, City, Country, Name, "
-					+ "PostalCode, State, Street, CommunityNickname, CompanyName, "
-					+ "Email, FirstName, LastName, MobilePhone, Title, UserType, "
-					+ "UserName From User Where Id = " + connection.getUserInfo().getUserId());
+			organization = em.createQuery("Select o From Organization o Where organizationId = :organizationId", Organization.class)
+					.setParameter("organizationId", organizationId)
+					.getSingleResult();
 			
-		} catch (ConnectionException e) {
-			e.printStackTrace();
+		} catch (NoResultException e) {
+			
+			SObject sobject = queryOrganization(organizationId);
+						
+			organization = new Organization();
+			organization.setCity(sobject.getField("City").toString());
+			organization.setCountry(sobject.getField("Country").toString());
+			organization.setDefaultLocaleSidKey("en_US");
+			organization.setFiscalYearStartMonth(3);
+			organization.setName(sobject.getField("Name").toString());
+			organization.setOrganizationId(sobject.getField("Id").toString());
+			organization.setPostalCode(sobject.getField("PostalCode").toString());
+			organization.setState(sobject.getField("State").toString());
+			organization.setStreet(sobject.getField("Street").toString());		
+			
+			em.getTransaction().begin();
+			em.persist(organization);
+			em.flush();			
+			em.getTransaction().commit();
 		}
 		
-		sobject = qr.getRecords()[0];
+		try {
+			user = em.createQuery("Select u From User u Where userId = :userId", User.class)
+					.setParameter("userId", userId)
+					.getSingleResult();
+			
+		} catch (NoResultException e) {
+			
+			SObject sobject = queryUser(userId);
+			
+			user = new User();
+			user.setOrganization(organization);
+			user.setAlias(sobject.getField("Alias").toString());
+			user.setCity(sobject.getField("City").toString());
+			user.setCommunityNickname(sobject.getField("CommunityNickname").toString());
+			//user.setCompanyName(sobject.getField("CompanyName").toString());
+			user.setCountry(sobject.getField("Country").toString());
+			user.setEmail(sobject.getField("Email").toString());
+			user.setFirstName(sobject.getField("FirstName").toString());
+			user.setIsActive(true);
+			user.setLastName(sobject.getField("LastName").toString());
+			user.setMobilePhone(sobject.getField("MobilePhone").toString());
+			user.setName(sobject.getField("Name").toString());
+			user.setStreet(sobject.getField("Street").toString());
+			user.setState(sobject.getField("State").toString());
+			user.setTimeZoneSidKey("America/Los_Angeles");
+			user.setTitle(sobject.getField("Title").toString());
+			user.setUserId(sobject.getField("Id").toString());
+			//user.setUserType(sobject.getField("UserType").toString());
+			//user.setUsername(sobject.getField("Username").toString());
+			
+			em.getTransaction().begin();
+			em.persist(user);
+			em.flush();			
+			em.getTransaction().commit();
+		}
 		
-		user = new User();
-		user.setOrganization(organization);
-		user.setAlias(sobject.getField("Alias").toString());
-		user.setCity(sobject.getField("City").toString());
-		user.setCommunityNickname(sobject.getField("CommunityNickname").toString());
-		user.setCompanyName(sobject.getField("CompanyName").toString());
-		user.setCountry(sobject.getField("Country").toString());
-		user.setEmail(sobject.getField("Email").toString());
-		user.setFirstName(sobject.getField("FirstName").toString());
-		user.setIsActive(true);
-		user.setLastName(sobject.getField("LastName").toString());
-		user.setMobilePhone(sobject.getField("MobilePhone").toString());
-		user.setName(sobject.getField("Name").toString());
-		user.setStreet(sobject.getField("Street").toString());
-		user.setState(sobject.getField("State").toString());
-		user.setTimeZoneSidKey("America/Los_Angeles");
-		user.setTitle(sobject.getField("Title").toString());
-		user.setUserId(sobject.getField("Id").toString());
-		user.setUserType(sobject.getField("UserType").toString());
-		user.setUsername(sobject.getField("UserName").toString());
-		
-		em.persist(user);
-		
-		em.getTransaction().commit();
 		em.close();
 	}
 	
@@ -140,5 +149,29 @@ public class DataImportTest {
 
 		DataImporter importer = new DataImporter(mappingFile, organization.getId(), user.getId(), connection, emf, "/tmp");
 		importer.runFullImport();
+	}
+	
+	private SObject queryOrganization(String organizationId) {
+		try {
+			return connection.query("Select Id, City, Country, Name, "
+					+ "PostalCode, State, Street From Organization "
+					+ "Where Id = '" + organizationId + "'").getRecords()[0];
+			
+		} catch (ConnectionException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	private SObject queryUser(String userId) {
+		try {
+			return connection.query("Select Id, Alias, City, Country, Name, "
+					+ "PostalCode, State, Street, CommunityNickname, CompanyName, "
+					+ "Email, FirstName, LastName, MobilePhone, Title, UserType, "
+					+ "Username From User Where Id = '" + userId + "'").getRecords()[0];
+		} catch (ConnectionException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 }
